@@ -5,6 +5,9 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const mongoose = require('mongoose');
 const UserRouter = require('./routes/user');
+const RoleRouter = require('./routes/roles');
+const CategoryRouter = require('./routes/categories');
+const TenderRouter = require('./routes/tenders');
 const errorHandler = require('./middlewares/error');
 const MongoStore = require('connect-mongo');
 require('dotenv').config('./config/config.env');
@@ -36,7 +39,11 @@ app.use(
     parseNumber: true,
   })
 );
+
 app.use('/user', UserRouter);
+app.use('/category', CategoryRouter);
+app.use('/tender', TenderRouter);
+app.use('/role', RoleRouter);
 
 app.use(errorHandler);
 
@@ -58,5 +65,3 @@ const conn = mongoose.connect(
     }
   }
 );
-
-module.exports = conn;

@@ -45,7 +45,8 @@ router.post(
     'password',
     'contactNumber',
     'firstName',
-    'lastName'
+    'lastName',
+    'walletAddress'
   ]),
   signup
 );

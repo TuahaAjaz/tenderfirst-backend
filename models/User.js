@@ -14,9 +14,6 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
-    title: {
-      type: String,
-    },
     firstName: {
       type: String,
       required: true,
@@ -28,6 +25,16 @@ const UserSchema = new Schema(
     image: {
       type: String,
     },
+    isAdmin: {
+      type: Boolean,
+      required: true,
+      default: false
+    },
+    isTenderee: {
+      type: Boolean,
+      required: true,
+      default: false
+    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -36,7 +43,25 @@ const UserSchema = new Schema(
     contactNumber: {
       type: String,
       required: true,
+      unique: true
     },
+    walletAddress: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    rating: {
+      type: Number,
+      default: 0
+    },
+    financialStability: {
+      type: Boolean,
+      default: false
+    },
+    workExperience: {
+      type: Number,
+      default: 0
+    }
   },
   { timestamps: true }
 );
@@ -56,4 +81,4 @@ UserSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('users', UserSchema);

@@ -63,7 +63,14 @@ const signup = asyncHandler(async (req, res, next) => {
       return next(new HttpError("Email is already registered", "duplicate-email", 403));
     }
     else {
-      const result = (await UserModel.create(req.body)).toJSON();
+      const result = (await UserModel.create({
+        email: req.body.email,
+        password: req.body.password,
+        contactNumber: req.body.contactNumber,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        walletAddress: req.body.walletAddress
+      })).toJSON();
       const { password, ...newUser } = result;
       res.json({ success: true, result: newUser });
     }
