@@ -13,6 +13,10 @@ const TenderSchema = Schema({
         type: String,
         required: true
     },
+    quantity: {
+        type: Number,
+        required: false
+    },
     tenderee: {
         type: Schema.Types.ObjectId,
         ref: "users",
@@ -27,20 +31,16 @@ const TenderSchema = Schema({
         type: Number,
         required: true
     },
-    expectedCost: {
-        type: Number,
-        required: true
-    },
     timeLimit: {
         type: Number,
         required: true
     },
-    category: {
+    category: [{
         type: Schema.Types.ObjectId,
         ref: "categories",
         required: false,
         autopopulate: true
-    },
+    }],
     startDate: {
         type: Date,
         required: true
@@ -58,8 +58,10 @@ const TenderSchema = Schema({
 
 TenderSchema.pre('save', async function() {
     try {
-        verifyDocument({ _id: this.tenderee }, User, "User");
-        verifyDocument({ _id: this.category }, Categories, "Category");
+        await verifyDocument({ _id: this.tenderee }, User, "User");
+        this.category.map(async (cat) => {
+            await verifyDocument({ _id: cat }, Categories, "Category");
+        })
     }
     catch (err) {
         next(err);

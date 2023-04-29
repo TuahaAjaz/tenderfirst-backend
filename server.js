@@ -10,7 +10,15 @@ const CategoryRouter = require('./routes/categories');
 const TenderRouter = require('./routes/tenders');
 const errorHandler = require('./middlewares/error');
 const MongoStore = require('connect-mongo');
-require('dotenv').config('./config/config.env');
+require('dotenv').config('./.env');
+const multichain = require('./multichainconfig');
+
+// const someFunc = async() => {
+//   const info = await multichain.getInfo();
+//   console.log(info);
+// }
+
+// someFunc();
 
 mongoose.set('strictQuery', false);
 

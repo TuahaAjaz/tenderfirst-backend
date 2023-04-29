@@ -25,28 +25,13 @@ const UserModel = require('../models/User');
 
 router.post("/login", checkNecessaryParameters(["email", "password"]), signin);
 router.post(
-  "/register",
-  protect,
-  checkNecessaryParameters([
-    'email',
-    'password',
-    'contactNumber',
-    'firstName',
-    'lastName',
-    'permission',
-  ]),
-  createUser
-);
-router.post(
   '/signup',
-  protect,
   checkNecessaryParameters([
     'email',
     'password',
     'contactNumber',
     'firstName',
     'lastName',
-    'walletAddress'
   ]),
   signup
 );

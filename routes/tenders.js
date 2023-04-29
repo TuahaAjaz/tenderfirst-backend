@@ -3,12 +3,16 @@ const router = require("express").Router();
 const {
   CreateTender,
   DeleteTender,
-  GetTenders
+  GetTenders,
+  GetApprovedTenders,
+  ApproveTender
 } = require('../controllers/Tender');
 
 const { protect } = require("../middlewares/protect");
 const { checkNecessaryParameters } = require('../middlewares/checkParams');
 const { pagination } = require('../middlewares/pagination');
+const { setDocument } = require("../middlewares/helpers");
+const Tender = require("../models/Tender");
 
 router.post(
     "/add",
@@ -18,12 +22,22 @@ router.post(
         "description",
         "financialStability",
         "requiredExperience",
-        "expectedCost",
         "timeLimit",
         "startDate",
         "endDate"
     ]), 
     CreateTender
+);
+
+router.post(
+    "/approve",
+    protect,
+    checkNecessaryParameters([
+        "tenderId",
+        "approval"
+    ]), 
+    setDocument('tenderId', Tender),
+    ApproveTender
 );
 
 router.post(
@@ -39,6 +53,13 @@ router.get(
     "/", 
     protect,
     GetTenders,
+    pagination
+);
+
+router.get(
+    "/approved", 
+    protect,
+    GetApprovedTenders,
     pagination
 );
 

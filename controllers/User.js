@@ -5,14 +5,15 @@ const HttpError = require('../utils/httpError');
 const { parseNumber } = require('../utils/validateNumber');
 const nodemailer = require("nodemailer");
 const crypto = require('crypto');
+const multichain = require('../multichainconfig');
 
 const MAIL_SETTINGS = {
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   secure: true, // true for 465, false for other ports
   auth: {
-    user: process.env.SMTP_EMAIL, // generated ethereal user
-    pass: process.env.SMTP_PASSWORD, // generated ethereal password
+    user: process.env.SMTP_USER, // generated ethereal user
+    pass: process.env.SMTP_PASS, // generated ethereal password
   },
 };
 
@@ -23,30 +24,19 @@ const signin = asyncHandler(async (req, res, next) => {
   const result = await UserModel.findOne({ email: email })
   if (result === null) {
     return next(HttpError.invalidCredentials());
-  } else {
+  } 
+  else {
     if (result.comparePassword(password)) {
       const { password, ...user } = result.toJSON();
-      req.session.user = user._id;
-      res.json({ success: true, result: user });
-    } else {
+      req.session.user = {
+        _id: user._id.toString(),
+        walletAddress: user.walletAddress
+      };
+      return res.status(200).json({ success: true, result: user });
+    } 
+    else {
       return next(HttpError.invalidCredentials());
     }
-  }
-});
-
-const createUser = asyncHandler(async (req, res, next) => {
-  if (parseNumber(req.body.contactNumber) === 'Invalid Contact Number') {
-    res.status(403).json({
-      success: false,
-      msg: 'Invalid Contact Number',
-      code: 'incorrect-number',
-    });
-  } else {
-    const result = (
-      await (await UserModel.create(req.body)).populate('permission')
-    ).toJSON();
-    const { password, ...newUser } = result;
-    res.json({ success: true, result: newUser });
   }
 });
 
@@ -63,13 +53,15 @@ const signup = asyncHandler(async (req, res, next) => {
       return next(new HttpError("Email is already registered", "duplicate-email", 403));
     }
     else {
+      const walletAddress = await multichain.getNewAddress();
+      console.log(walletAddress);
       const result = (await UserModel.create({
         email: req.body.email,
         password: req.body.password,
         contactNumber: req.body.contactNumber,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        walletAddress: req.body.walletAddress
+        walletAddress: walletAddress
       })).toJSON();
       const { password, ...newUser } = result;
       res.json({ success: true, result: newUser });
@@ -98,7 +90,7 @@ const resetpass = asyncHandler(async (req, res, next) => {
 
 const sendMail = asyncHandler(async(req, res, next) => {
   token = crypto.createHash('sha256').update(req.body.email).digest('hex');
-  await UserModel.findOneAndUpdate({ email: req.body.email }, { confirmationCode: token });
+  await UserModel.findOneAndUpdate({ email: req.body.email });
   const transporter = nodemailer.createTransport(MAIL_SETTINGS);
   await transporter.sendMail({
     from: MAIL_SETTINGS.auth.user,
@@ -283,7 +275,6 @@ exports.updateUser = updateUser;
 exports.deleteUser = deleteUser;
 exports.updateProfile = updateProfile;
 exports.signin = signin;
-exports.createUser = createUser;
 exports.resetpass = resetpass;
 exports.logout = logout;
 exports.signup = signup;

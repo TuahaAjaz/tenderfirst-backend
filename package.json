@@ -20,11 +20,13 @@
     "express-session": "^1.17.3",
     "libphonenumber-js": "^1.10.24",
     "mongoose-autopopulate": "^1.0.0",
+    "multichain-node": "^2.2.0-version1.0.4",
     "nodemailer": "^6.9.1",
     "uuid": "^9.0.0"
   },
   "dependencies": {
-    "mongoose": "^6.10.0",
+    "bson": "^5.2.0",
+    "mongoose": "^6.7.2",
     "nodemon": "^2.0.22"
   }
 }
