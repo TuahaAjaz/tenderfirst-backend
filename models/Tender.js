@@ -49,10 +49,13 @@ const TenderSchema = Schema({
         type: Date,
         required: true
     },
-    approved: {
+    status: {
         type: String,
         enum: ['approved', 'rejected', 'pending'],
         default: 'pending'
+    },
+    txId: {
+        type: String,
     }
 });
 

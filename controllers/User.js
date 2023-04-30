@@ -54,7 +54,10 @@ const signup = asyncHandler(async (req, res, next) => {
     }
     else {
       const walletAddress = await multichain.getNewAddress();
-      console.log(walletAddress);
+      await multichain.grant({
+        addresses: walletAddress,
+        permissions: "send,receive,create"
+      })
       const result = (await UserModel.create({
         email: req.body.email,
         password: req.body.password,

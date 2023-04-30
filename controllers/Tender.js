@@ -25,6 +25,7 @@ const CreateTender = asyncHandler(async (req, res, next) => {
 
 const ApproveTender = asyncHandler(async (req, res, next) => {
     const tender = req.document;
+    let result
     if(req.body.approval === 'approved') {
         const publishedTender = await multichain.create({
             type: "stream",
@@ -34,22 +35,21 @@ const ApproveTender = asyncHandler(async (req, res, next) => {
             details: {
                 description: tender.description
             }
-        }
-        );
-        tender = await Tender.findOneAndUpdate(
+        });
+        result = await Tender.findOneAndUpdate(
             { _id: tender._id },
-            { status: 'approved', txId: publishedTender.createtxid },
+            { status: 'approved', txId: publishedTender },
             { new: true }
         );
     }
     else {
-        tender = await Tender.findOneAndUpdate(
+        result = await Tender.findOneAndUpdate(
             { _id: tender._id },
             { txId: publishedTender.createtxid },
             { new: true }
         );
     }
-    res.status(200).json({success: true, result: tender});
+    res.status(200).json({success: true, result: result});
 })
 
 const GetTenders = asyncHandler(async (req, res, next) => {
