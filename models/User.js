@@ -54,9 +54,11 @@ const UserSchema = new Schema(
       type: Number,
       default: 0
     },
-    financialStability: {
-      type: Boolean,
-      default: false
+    pool: {
+      type: Schema.Types.ObjectId,
+      ref: 'pool',
+      required: true,
+      autopopulate: true
     },
     workExperience: {
       type: Number,
@@ -80,5 +82,7 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
+
+UserSchema.plugin(require('mongoose-autopopulate'));
 
 module.exports = mongoose.model('users', UserSchema);

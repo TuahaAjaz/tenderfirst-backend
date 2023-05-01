@@ -32,6 +32,6 @@ const RolesSchema = Schema({
         type: Boolean,
         require: true
     },
-});
+}, {timestamps: true});
 
 module.exports = mongoose.model("roles", RolesSchema);

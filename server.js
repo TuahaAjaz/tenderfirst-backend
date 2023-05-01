@@ -8,6 +8,7 @@ const UserRouter = require('./routes/user');
 const RoleRouter = require('./routes/roles');
 const CategoryRouter = require('./routes/categories');
 const TenderRouter = require('./routes/tenders');
+const PoolRouter = require('./routes/pool');
 const errorHandler = require('./middlewares/error');
 const MongoStore = require('connect-mongo');
 require('dotenv').config('./.env');
@@ -52,6 +53,7 @@ app.use('/user', UserRouter);
 app.use('/category', CategoryRouter);
 app.use('/tender', TenderRouter);
 app.use('/role', RoleRouter);
+app.use('/pool', PoolRouter);
 
 app.use(errorHandler);
 

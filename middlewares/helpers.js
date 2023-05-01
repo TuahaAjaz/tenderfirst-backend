@@ -1,3 +1,4 @@
+const HttpError = require('../utils/httpError');
 const asyncHandler = require('./async');
 
 const setDocument = (id, model) =>
@@ -10,4 +11,20 @@ const setDocument = (id, model) =>
     next();
   });
 
+const CheckBiddingTime = asyncHandler(async (req, res, next) => {
+  const tender = req.document;
+  if(new Date() >= tender.startDate) {
+    if(new Date() <= tender.endDate) {
+      next();
+    }
+    else {
+      return next(new HttpError("Bidding period has ended", "invalid-time", 403));
+    }
+  }
+  else {
+    return next(new HttpError("Bidding period not started yet", "invalid-time", 403));
+  }
+})  
+
 exports.setDocument = setDocument;
+exports.CheckBiddingTime = CheckBiddingTime;

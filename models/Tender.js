@@ -13,6 +13,10 @@ const TenderSchema = Schema({
         type: String,
         required: true
     },
+    location: {
+        type: String,
+        required: true
+    },
     quantity: {
         type: Number,
         required: false
@@ -57,7 +61,7 @@ const TenderSchema = Schema({
     txId: {
         type: String,
     }
-});
+}, {timestamps: true});
 
 TenderSchema.pre('save', async function() {
     try {
