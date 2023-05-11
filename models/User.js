@@ -22,6 +22,10 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    organizationName: {
+      type: String,
+      required: false
+    },
     image: {
       type: String,
     },
@@ -57,7 +61,7 @@ const UserSchema = new Schema(
     pool: {
       type: Schema.Types.ObjectId,
       ref: 'pool',
-      required: true,
+      required: false,
       autopopulate: true
     },
     workExperience: {

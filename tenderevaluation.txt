@@ -1,1 +1,6 @@
-- Pool
+- Pool 
+- Price 
+- Time 
+- workExperience 
+- Rating ???
+- Contract Terms and Conditions (Agree || Disagree)

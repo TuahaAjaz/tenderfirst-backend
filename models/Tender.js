@@ -15,7 +15,7 @@ const TenderSchema = Schema({
     },
     location: {
         type: String,
-        required: true
+        required: false
     },
     quantity: {
         type: Number,
@@ -55,7 +55,7 @@ const TenderSchema = Schema({
     },
     status: {
         type: String,
-        enum: ['approved', 'rejected', 'pending'],
+        enum: ['approved', 'rejected', 'pending', 'active', 'completed'],
         default: 'pending'
     },
     txId: {

@@ -11,20 +11,28 @@ const TenderRouter = require('./routes/tenders');
 const PoolRouter = require('./routes/pool');
 const errorHandler = require('./middlewares/error');
 const MongoStore = require('connect-mongo');
+const cors = require('cors');
 require('dotenv').config('./.env');
 const multichain = require('./multichainconfig');
 
-// const someFunc = async() => {
-//   const info = await multichain.getInfo();
-//   console.log(info);
-// }
-
-// someFunc();
+function setAccessControlHeaders(req, res, next) {
+  console.log("inside")
+  res.header("Access-Control-Allow-Origin", "*"); 
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Allow specific HTTP methods
+  res.header("Access-Control-Allow-Headers", "*");
+  res.header('Access-Control-Allow-Credentials', 'true');
+  // console.log(res);
+  next();
+}
 
 mongoose.set('strictQuery', false);
 
 
 app.use(express.json());
+app.use(cors({
+  credentials: true,
+  origin: ["http://localhost:3001"]
+}));
 app.use(
   session({
     store: MongoStore.create({
@@ -57,7 +65,7 @@ app.use('/pool', PoolRouter);
 
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${process.env.PORT}`);
 });
 

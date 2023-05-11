@@ -7,15 +7,9 @@ const nodemailer = require("nodemailer");
 const crypto = require('crypto');
 const multichain = require('../multichainconfig');
 
-const MAIL_SETTINGS = {
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER, // generated ethereal user
-    pass: process.env.SMTP_PASS, // generated ethereal password
-  },
-};
+const getTestAccount = async () => {
+  return await nodemailer.createTestAccount();
+}
 
 const signin = asyncHandler(async (req, res, next) => {
   const email = req.body.email;
@@ -64,6 +58,7 @@ const signup = asyncHandler(async (req, res, next) => {
         contactNumber: req.body.contactNumber,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
+        organizationName: req.body.organizationName,
         walletAddress: walletAddress
       })).toJSON();
       const { password, ...newUser } = result;
@@ -92,17 +87,31 @@ const resetpass = asyncHandler(async (req, res, next) => {
 });
 
 const sendMail = asyncHandler(async(req, res, next) => {
+  const testAccount = await getTestAccount();
+
+  const MAIL_SETTINGS = {
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'dillon.welch51@ethereal.email', // generated ethereal user
+      pass: 'Y2XPKcHf8avqx6dkSe', // generated ethereal password
+    },
+  };
+
+
   token = crypto.createHash('sha256').update(req.body.email).digest('hex');
   await UserModel.findOneAndUpdate({ email: req.body.email });
   const transporter = nodemailer.createTransport(MAIL_SETTINGS);
-  await transporter.sendMail({
+  const t = await transporter.sendMail({
     from: MAIL_SETTINGS.auth.user,
     to: req.body.email, 
     subject: 'Hello ✔',
     html: `
-    <p>Click <a href="http://localhost:3001/user/verify-email/${token}">here</a> to verify your email</p>
+    <p>Click <a href="http://localhost:3000/user/verify-email/${token}">here</a> to verify your email</p>
     `,
   });
+  console.log(t);
   res.status(200).json({success: true});
 })
 
@@ -115,7 +124,6 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
     const token = crypto.createHash('sha256').update(req.body.email).digest('hex');
     if(token === req.params['token']) {
       delete user['password'];
-      delete user['confirmationCode'];
       res.status(200).json({success: true, result: user});
     }
     else {
@@ -214,7 +222,6 @@ const logout = asyncHandler(async (req, res, next) => {
 
 const getUsers = asyncHandler(async (req, res, next) => {
   req.model = UserModel;
-  req.populate = 'permission';
   if (!req.query.select) {
     req.query.select = '';
   }

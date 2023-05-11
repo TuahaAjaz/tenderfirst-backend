@@ -2,7 +2,6 @@ const router = require("express").Router();
 
 const {
   signin,
-  createUser,
   logout,
   resetpass,
   updateUser,
