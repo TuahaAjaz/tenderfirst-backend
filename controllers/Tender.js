@@ -3,17 +3,19 @@ const TenderSchema = require("../models/Tender");
 const asyncHandler = require("../middlewares/async");
 const multichain = require("../multichainconfig");
 const Tender = require("../models/Tender");
+const { generateCode } = require("../utils/GenerateCode");
 
 const CreateTender = asyncHandler(async (req, res, next) => {
+    const code = await generateCode(Tender, 'T-')
     const result = await TenderSchema.create(
         {
             title: req.body.title,
+            code: code,
             description: req.body.description,
             quantity: req.body.quantity,
             tenderee: req.session.user._id,
-            financialStability: req.body.financialStability,
+            pool: req.body.poolId,
             requiredExperience: req.body.requiredExperience,
-            expectedCost: req.body.expectedCost,
             timeLimit: req.body.timeLimit,
             category: req.body.category,
             endDate: req.body.endDate,
@@ -29,7 +31,7 @@ const ApproveTender = asyncHandler(async (req, res, next) => {
     if(req.body.approval === 'approved') {
         const publishedTender = await multichain.create({
             type: "stream",
-            name: tender.title,
+            name: tender.code,
             open: true,
             from: req.session.user.walletAddress,
             details: {
@@ -41,11 +43,15 @@ const ApproveTender = asyncHandler(async (req, res, next) => {
             { status: 'approved', txId: publishedTender },
             { new: true }
         );
+        await multichain.subscribe({
+            stream: result.txId,
+            from: req.session.user.walletAddress
+        });
     }
     else {
         result = await Tender.findOneAndUpdate(
             { _id: tender._id },
-            { txId: publishedTender.createtxid },
+            { status: 'rejected' },
             { new: true }
         );
     }
@@ -54,6 +60,36 @@ const ApproveTender = asyncHandler(async (req, res, next) => {
 
 const GetTenders = asyncHandler(async (req, res, next) => {
     req.model = TenderSchema;
+    const query = req.query['category'];
+    if (req.query["category"]) {
+        if (req.query["category"]["in"] !== undefined) {
+            req.query["category"]["in"] = req.query["category"]["in"].split(",");
+        }
+    }
+    req.extraStages = [
+        {
+            $lookup: {
+                from: 'pools',
+                localField: 'pool',
+                foreignField: '_id',
+                as: 'pool'
+            }
+        },
+        {
+            $unwind: { path: '$pool', preserveNullAndEmptyArrays: true }
+        },
+        {
+            $lookup: {
+                from: 'catagories',
+                localField: 'catagory',
+                foreignField: '_id',
+                as: 'categories'
+            }
+        },
+        {
+            $unwind: { path: '$categories', preserveNullAndEmptyArrays: true }
+        },
+    ]
     next();
 });
 

@@ -56,4 +56,76 @@ const pagination = asyncHandler(async (req, res) => {
   res.json({ success: true, result: result });
 });
 
+const aggregatedPagination = asyncHandler(async (req, res, next) => {
+  // Copy req.query
+  const reqQuery = { ...req.query };
+
+  // Fields to exclude
+  const removeFields = ["select", "sort", "page", "limit"];
+
+  // Loop over removeFields and delete them from reqQuery
+  removeFields.forEach((param) => delete reqQuery[param]);
+  // Create query string
+
+  let queryStr = JSON.stringify(reqQuery);
+
+  // Create operators ($gt, $gte, etc)
+  queryStr = queryStr.replace(
+    /\b(gt|gte|lt|lte|in)\b/g,
+    (match) => `$${match}`
+  );
+
+  const filters = JSON.parse(queryStr);
+
+  const pageNumber = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 25;
+  let sortBy;
+  let selected = { __v: 0 };
+
+  if (req.query.select) {
+    selected = req.query.select;
+  }
+
+  if (req.query.sort) {
+    sortBy = req.query.sort;
+  } else {
+    sortBy = { "-createdAt": 1 };
+  }
+  const result = {};
+
+  const model = req.model;
+  let params;
+
+  const totalPosts = await model.countDocuments();
+  let startIndex = (pageNumber - 1) * limit;
+  result.totalPages = Math.ceil(totalPosts / limit);
+
+  const extraStages = req.extraStages || [];
+  console.log(filters);
+  params = [
+    ...extraStages,
+    {
+      $match: filters,
+    },
+    {
+      $project: selected,
+    },
+    {
+      $sort: sortBy,
+    },
+    {
+      $skip: startIndex,
+    },
+    {
+      $limit: limit,
+    },
+  ];
+
+  result.data = await model.aggregate(params);
+  result.limit = limit;
+  result.currentPage = pageNumber;
+  res.json({ success: true, result: result });
+});
+
 exports.pagination = pagination;
+exports.aggregatedPagination = aggregatedPagination;

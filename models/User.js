@@ -34,11 +34,6 @@ const UserSchema = new Schema(
       required: true,
       default: false
     },
-    isTenderee: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -64,6 +59,12 @@ const UserSchema = new Schema(
       required: false,
       autopopulate: true
     },
+    categories: [{
+      type: Schema.Types.ObjectId,
+      ref: 'categories',
+      required: false,
+      autopopulate: true
+    }],
     workExperience: {
       type: Number,
       default: 0

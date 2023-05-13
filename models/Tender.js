@@ -9,6 +9,11 @@ const TenderSchema = Schema({
         type: String,
         required: true
     },
+    code: {
+        type: String,
+        required: false,
+        unique: true,
+    },
     description: {
         type: String,
         required: true
@@ -27,9 +32,11 @@ const TenderSchema = Schema({
         required: false,
         autopopulate: true
     },
-    financialStability: {
-        type: Boolean,
-        required: true
+    pool: {
+        type: Schema.Types.ObjectId,
+        ref: 'pool',
+        required: false,
+        autopopulate: true
     },
     requiredExperience: {
         type: Number,

@@ -31,7 +31,8 @@ mongoose.set('strictQuery', false);
 app.use(express.json());
 app.use(cors({
   credentials: true,
-  origin: ["http://localhost:3001"]
+  methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
+  origin: "http://localhost:3000"
 }));
 app.use(
   session({
@@ -44,7 +45,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
+      path: '/',
       maxAge: 14 * 24 * 60 * 60 * 1000,
+      httpOnly: false,
+      sameSite: false,
+      secure: false
     },
   })
 );

@@ -14,6 +14,10 @@ const PoolModel = new Schema({
     maximumCost: {
         type: Number,
         required: true
+    },
+    stage: {
+        type: Number,
+        required: false
     }
 }, {timestamps: true});
 

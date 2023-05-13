@@ -13,11 +13,13 @@ const CreatePool = asyncHandler(async (req, res, next) => {
         counter = parseInt(pools[0].title.slice('P-'.length));
     }
     const title = `P-${counter + 1}`;
+    const stage = pools[0].stage;
     const result = await Pool.create(
         {
             title: title,
             minimumCost: req.body.minimumCost,
             maximumCost: req.body.maximumCost,
+            stage: stage
         }
     );
     res.status(200).json({success: true, result: result});
