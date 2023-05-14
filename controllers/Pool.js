@@ -9,11 +9,15 @@ const CreatePool = asyncHandler(async (req, res, next) => {
         .sort({ createdAt: -1 })
         .limit(1);
     let counter = 0;
+    let stage;
     if (pools.length > 0) {
         counter = parseInt(pools[0].title.slice('P-'.length));
+        stage = pools[0].stage + 1;
+    }
+    else {
+        stage = 1;
     }
     const title = `P-${counter + 1}`;
-    const stage = pools[0].stage;
     const result = await Pool.create(
         {
             title: title,

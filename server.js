@@ -15,16 +15,6 @@ const cors = require('cors');
 require('dotenv').config('./.env');
 const multichain = require('./multichainconfig');
 
-function setAccessControlHeaders(req, res, next) {
-  console.log("inside")
-  res.header("Access-Control-Allow-Origin", "*"); 
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Allow specific HTTP methods
-  res.header("Access-Control-Allow-Headers", "*");
-  res.header('Access-Control-Allow-Credentials', 'true');
-  // console.log(res);
-  next();
-}
-
 mongoose.set('strictQuery', false);
 
 
