@@ -12,6 +12,10 @@ const PublishBid = asyncHandler(async (req, res, next) => {
         comments: req.body.comments
     };
     const tender = req.document;
+    await multichain.subscribe({
+        stream: tender.txId,
+        from: req.session.user.walletAddress
+    });
     const result = await multichain.publishFrom({
         from: req.session.user.walletAddress,
         stream: tender.txId,
@@ -42,6 +46,23 @@ const SubscribeTender = asyncHandler(async(req, res, next) => {
     });
     res.status(200).json({success: true, result: result});
 })
+
+const EvaluateTenderBids = async (tender) => {
+    try {
+        const streamItems = await multichain.listStreamItems({
+            stream: tender.txId,
+            verbose: true
+        });
+        const bids = streamItems.map((bid) => {
+            bid.data = JSON.parse(Buffer.from(bid.data, "hex").toString());
+            return bid;
+        });
+
+    }
+    catch (err) {
+        
+    }
+}
 
 exports.PublishBid = PublishBid;
 exports.GetTenderBids = GetTenderBids;

@@ -13,6 +13,7 @@ const CreateTender = asyncHandler(async (req, res, next) => {
             code: code,
             description: req.body.description,
             quantity: req.body.quantity,
+            location: req.body.location,
             tenderee: req.session.user._id,
             pool: req.body.poolId,
             requiredExperience: req.body.requiredExperience,
