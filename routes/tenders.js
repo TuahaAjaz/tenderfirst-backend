@@ -13,7 +13,7 @@ const { checkNecessaryParameters } = require('../middlewares/checkParams');
 const { pagination } = require('../middlewares/pagination');
 const { setDocument, CheckBiddingTime } = require("../middlewares/helpers");
 const Tender = require("../models/Tender");
-const { PublishBid, GetTenderBids, SubscribeTender } = require("../controllers/Bid");
+const { PublishBid, GetTenderBids, SubscribeTender, GetBidByKey } = require("../controllers/Bid");
 
 router.post(
     "/add",
@@ -75,6 +75,12 @@ router.get(
     "/bids", 
     protect,
     GetTenderBids
+);
+
+router.get(
+    "/specific-bid", 
+    protect,
+    GetBidByKey
 );
 
 router.post(

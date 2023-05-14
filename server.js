@@ -9,14 +9,29 @@ const RoleRouter = require('./routes/roles');
 const CategoryRouter = require('./routes/categories');
 const TenderRouter = require('./routes/tenders');
 const PoolRouter = require('./routes/pool');
+const RatingRouter = require('./routes/ratings');
 const errorHandler = require('./middlewares/error');
 const MongoStore = require('connect-mongo');
 const cors = require('cors');
 require('dotenv').config('./.env');
 const multichain = require('./multichainconfig');
+const cron = require('node-cron');
+const { CheckTendersEvaluationTime } = require('./controllers/Cronejob');
 
 mongoose.set('strictQuery', false);
 
+const getFunction = async() => {
+  try {
+    CheckTendersEvaluationTime();
+  }
+  catch(err) {
+    console.log(err);
+  }
+}
+
+const task = cron.schedule('*/10 * * * * *', getFunction);
+
+task.start();
 
 app.use(express.json());
 app.use(cors({
@@ -57,6 +72,7 @@ app.use('/category', CategoryRouter);
 app.use('/tender', TenderRouter);
 app.use('/role', RoleRouter);
 app.use('/pool', PoolRouter);
+app.use('/rating', RatingRouter);
 
 app.use(errorHandler);
 

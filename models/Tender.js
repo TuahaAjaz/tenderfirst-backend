@@ -32,6 +32,12 @@ const TenderSchema = Schema({
         required: false,
         autopopulate: true
     },
+    tenderer: {
+        type: Schema.Types.ObjectId,
+        ref: "users",
+        required: false,
+        autopopulate: true
+    },
     pool: {
         type: Schema.Types.ObjectId,
         ref: 'pool',
