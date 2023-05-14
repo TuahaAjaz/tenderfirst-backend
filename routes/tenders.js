@@ -21,7 +21,6 @@ router.post(
     checkNecessaryParameters([
         "title", 
         "description",
-        "requiredExperience",
         "timeLimit",
         "startDate",
         "endDate"

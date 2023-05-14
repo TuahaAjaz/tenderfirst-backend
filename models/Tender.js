@@ -38,10 +38,6 @@ const TenderSchema = Schema({
         required: false,
         autopopulate: true
     },
-    requiredExperience: {
-        type: Number,
-        required: true
-    },
     timeLimit: {
         type: Number,
         required: true

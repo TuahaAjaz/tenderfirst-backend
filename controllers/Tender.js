@@ -16,7 +16,6 @@ const CreateTender = asyncHandler(async (req, res, next) => {
             location: req.body.location,
             tenderee: req.session.user._id,
             pool: req.body.poolId,
-            requiredExperience: req.body.requiredExperience,
             timeLimit: req.body.timeLimit,
             category: req.body.category,
             endDate: req.body.endDate,
