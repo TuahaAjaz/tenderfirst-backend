@@ -59,7 +59,9 @@ const signup = asyncHandler(async (req, res, next) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         organizationName: req.body.organizationName,
-        walletAddress: walletAddress
+        walletAddress: walletAddress,
+        categories: req.body.category,
+        pool: req.body.pool
       })).toJSON();
       const { password, ...newUser } = result;
       res.json({ success: true, result: newUser });
