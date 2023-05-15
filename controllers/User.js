@@ -90,13 +90,12 @@ const sendMail = asyncHandler(async(req, res, next) => {
   const testAccount = await getTestAccount();
 
   const MAIL_SETTINGS = {
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false,
+    service: 'gmail',
     auth: {
-      user: 'dillon.welch51@ethereal.email', // generated ethereal user
-      pass: 'Y2XPKcHf8avqx6dkSe', // generated ethereal password
+      user: process.env.SMTP_USER, // generated ethereal user
+      pass: process.env.SMTP_PASS, // generated ethereal password
     },
+    from: process.env.SMTP_USER
   };
 
 

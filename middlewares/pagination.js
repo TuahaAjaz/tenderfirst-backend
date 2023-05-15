@@ -67,15 +67,15 @@ const aggregatedPagination = asyncHandler(async (req, res, next) => {
   removeFields.forEach((param) => delete reqQuery[param]);
   // Create query string
 
-  let queryStr = JSON.stringify(reqQuery);
+  // let queryStr = JSON.stringify(reqQuery);
 
-  // Create operators ($gt, $gte, etc)
-  queryStr = queryStr.replace(
-    /\b(gt|gte|lt|lte|in)\b/g,
-    (match) => `$${match}`
-  );
+  // // Create operators ($gt, $gte, etc)
+  // queryStr = queryStr.replace(
+  //   /\b(gt|gte|lt|lte|in)\b/g,
+  //   (match) => `$${match}`
+  // );
 
-  const filters = JSON.parse(queryStr);
+  const filters = reqQuery;
 
   const pageNumber = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 25;
@@ -101,12 +101,8 @@ const aggregatedPagination = asyncHandler(async (req, res, next) => {
   result.totalPages = Math.ceil(totalPosts / limit);
 
   const extraStages = req.extraStages || [];
-  console.log(filters);
   params = [
     ...extraStages,
-    {
-      $match: filters,
-    },
     {
       $project: selected,
     },

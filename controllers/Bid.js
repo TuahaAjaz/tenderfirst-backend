@@ -54,8 +54,13 @@ const GetBidByKey = asyncHandler(async (req, res, next) => {
             key: req.query.key,
             verbose: true
         })
-        bid[0].data = JSON.parse(Buffer.from(bid[0].data, "hex").toString());
-        res.status(200).json({success: true, result: bid});
+        if(bid && bid.length > 0) {
+            bid[0].data = JSON.parse(Buffer.from(bid[0].data, "hex").toString());
+            res.status(200).json({success: true, result: bid});
+        }
+        else {
+            res.status(200).json({success: true, result: bid});
+        }
     }
     else {
         return next(HttpError.notFound(`Tender ${req.query.tenderId} not found`))

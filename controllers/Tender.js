@@ -3,6 +3,7 @@ const TenderSchema = require("../models/Tender");
 const asyncHandler = require("../middlewares/async");
 const multichain = require("../multichainconfig");
 const Tender = require("../models/Tender");
+const Pool = require('../models/Pool');
 const { generateCode } = require("../utils/GenerateCode");
 
 const CreateTender = asyncHandler(async (req, res, next) => {
@@ -60,10 +61,23 @@ const ApproveTender = asyncHandler(async (req, res, next) => {
 
 const GetTenders = asyncHandler(async (req, res, next) => {
     req.model = TenderSchema;
-    const query = req.query['category'];
+    let pool;
+    const filters = {};
+
+    if(req.query.pool) {
+        pool = await Pool.findOne({ _id: req.query.pool });
+        filters['pool.stage'] = { $lte: pool.stage } 
+    }
+    if(req.query.title) {
+        filters['title'] = { $regex: req.query.title, $options: 'i' }
+    }
     if (req.query["category"]) {
-        if (req.query["category"]["in"] !== undefined) {
-            req.query["category"]["in"] = req.query["category"]["in"].split(",");
+        req.query["category"] = req.query["category"].split(",");
+        req.query["category"] = req.query["category"].map((category) => {
+            return mongoose.Types.ObjectId(category);
+        })
+        filters['category._id'] = {
+            "$in": req.query['category']
         }
     }
     req.extraStages = [
@@ -80,18 +94,23 @@ const GetTenders = asyncHandler(async (req, res, next) => {
         },
         {
             $lookup: {
-                from: 'catagories',
-                localField: 'catagory',
+                from: 'categories',
+                localField: 'category',
                 foreignField: '_id',
-                as: 'categories'
+                as: 'category'
             }
         },
         {
-            $unwind: { path: '$categories', preserveNullAndEmptyArrays: true }
-        },
+            $match: filters
+        }
     ]
     next();
 });
+
+const GetAllTenders = asyncHandler(async (req, res, next) => {
+    req.model = Tender;
+    next();
+})
 
 const GetApprovedTenders = asyncHandler(async (req, res, next) => {
     const tenders = await multichain.listStreams();
@@ -108,3 +127,4 @@ exports.DeleteTender = DeleteTender;
 exports.GetTenders = GetTenders;
 exports.GetApprovedTenders = GetApprovedTenders;
 exports.ApproveTender = ApproveTender;
+exports.GetAllTenders = GetAllTenders;

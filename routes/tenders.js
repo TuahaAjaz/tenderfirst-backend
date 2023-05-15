@@ -5,12 +5,13 @@ const {
   DeleteTender,
   GetTenders,
   GetApprovedTenders,
-  ApproveTender
+  ApproveTender,
+  GetAllTenders
 } = require('../controllers/Tender');
 
 const { protect } = require("../middlewares/protect");
 const { checkNecessaryParameters } = require('../middlewares/checkParams');
-const { pagination } = require('../middlewares/pagination');
+const { pagination, aggregatedPagination } = require('../middlewares/pagination');
 const { setDocument, CheckBiddingTime } = require("../middlewares/helpers");
 const Tender = require("../models/Tender");
 const { PublishBid, GetTenderBids, SubscribeTender, GetBidByKey } = require("../controllers/Bid");
@@ -23,7 +24,9 @@ router.post(
         "description",
         "timeLimit",
         "startDate",
-        "endDate"
+        "endDate",
+        "category",
+        "pool"
     ]), 
     CreateTender
 );
@@ -51,8 +54,15 @@ router.post(
 router.get(
     "/", 
     protect,
-    GetTenders,
+    GetAllTenders,
     pagination
+);
+
+router.get(
+    "/users", 
+    protect,
+    GetTenders,
+    aggregatedPagination
 );
 
 router.post(
