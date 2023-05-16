@@ -80,6 +80,7 @@ const GetTenders = asyncHandler(async (req, res, next) => {
             "$in": req.query['category']
         }
     }
+    filters['status'] = 'approved';
     req.extraStages = [
         {
             $lookup: {
