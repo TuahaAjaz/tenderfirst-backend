@@ -26,7 +26,7 @@ router.post(
         "startDate",
         "endDate",
         "category",
-        "pool"
+        "poolId"
     ]), 
     CreateTender
 );
