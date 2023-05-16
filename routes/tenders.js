@@ -14,7 +14,7 @@ const { checkNecessaryParameters } = require('../middlewares/checkParams');
 const { pagination, aggregatedPagination } = require('../middlewares/pagination');
 const { setDocument, CheckBiddingTime } = require("../middlewares/helpers");
 const Tender = require("../models/Tender");
-const { PublishBid, GetTenderBids, SubscribeTender, GetBidByKey } = require("../controllers/Bid");
+const { PublishBid, GetTenderBids, SubscribeTender, GetBidByKey, GetTenderCandidates, SelectWinnerFromCandidates, TestSmartContract } = require("../controllers/Bid");
 
 router.post(
     "/add",
@@ -92,6 +92,34 @@ router.get(
     protect,
     GetBidByKey
 );
+
+router.get(
+    '/candidates',
+    protect,
+    GetTenderCandidates,
+    pagination
+);
+
+router.post(
+    '/select-winner',
+    protect,
+    checkNecessaryParameters([
+        'tenderId',
+        'tendererId',
+    ]),
+    setDocument('tenderId', Tender),
+    SelectWinnerFromCandidates
+);
+
+router.post(
+    '/test-contract',
+    protect,
+    checkNecessaryParameters([
+        'tenderId'
+    ]),
+    setDocument('tenderId', Tender),
+    TestSmartContract
+)
 
 router.post(
     "/subscribe", 

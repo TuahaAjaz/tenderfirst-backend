@@ -5,15 +5,27 @@ const User = require('./User');
 const Schema = mongoose.Schema;
 
 const CandidatesSchema = new Schema({
-    tenderer: [{
+    tenderer: {
         type: Schema.Types.ObjectId,
         ref: 'users',
         autopopulate: true
-    }],
+    },
     tender: {
         type: Schema.Types.ObjectId,
         ref: 'tenders',
         autopopulate: true
+    },
+    bid: {
+        type: Schema.Types.Map,
+        of: Schema.Types.Mixed
+    },
+    score: {
+        type: Number
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'completed'],
+        default: 'pending'
     }
 });
 

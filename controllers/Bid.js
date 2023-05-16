@@ -76,8 +76,56 @@ const SubscribeTender = asyncHandler(async(req, res, next) => {
     res.status(200).json({success: true, result: result});
 })
 
+const GetTenderCandidates = asyncHandler(async (req, res, next) => {
+    req.model = Candidates;
+    next();
+})
+
+const SelectWinnerFromCandidates = asyncHandler(async (req, res, next) => {
+    const tender = req.document;
+    await Tender.findOneAndUpdate(
+        { _id: tender._id },
+        { status: 'active', tenderer: req.body.tendererId },
+        { new: true }
+    );
+    const candidates = await Candidates.find({ tender: tender._id });
+    const winner = candidates.map((candidate) => {
+        if(candidate.tenderer._id === req.body.tendererId) {
+            return candidate;
+        }
+    })
+    const obj = {
+        user: winner.tenderer,
+        bid: winner.bid,
+        score: winner.score
+    }
+    const address = await multichain.listAddresses();
+    await multichain.publishFrom({
+        from: address[0].address,
+        stream: tender.txId,
+        key: 'winner',
+        data: Buffer.from(JSON.stringify(obj), "utf8").toString("hex")
+    })
+})
+
+const TestSmartContract = asyncHandler(async (req, res, next) => {
+    const tender = req.document;
+    await EvaluateTenderBids(tender);
+    res.status(200).json({success: true});
+})
+
+function normalizePreferablyLess(value, min, max) {
+    return (max - value) / (max - min);
+}
+  
+  // Normalize a value based on a range (preferably more value)
+function normalizePreferablyMore(value, min, max) {
+    return (value - min) / (max - min);
+}
+
 const EvaluateTenderBids = async (tender) => {
     try {
+        console.log("inside");
         const streamItems = await multichain.listStreamItems({
             stream: tender.txId,
             verbose: true
@@ -86,62 +134,72 @@ const EvaluateTenderBids = async (tender) => {
             bid.data = JSON.parse(Buffer.from(bid.data, "hex").toString());
             return bid;
         });
+        bids.pop();
         // console.log(bids);
         let scoreBoard = [];
         let costWeight = 0.3, daysWeight = 0.3, experienceWeight = 0.2, ratingWeight = 0.2; 
-        let minCost = bids[0].data.estimatedCost, minDays = bids[0].data.estimatedDays, maxExperience = 0, maxRating = 0;
+        let minCost = bids[0].data.estimatedCost, minDays = bids[0].data.estimatedDays, minExperience = bids[0].data.estimatedDays, minRating = 5 //Highest Rating;
+        let maxCost = 0, maxDays = 0, maxExperience = 0, maxRating = 0;
         // Loop to choose maximum and minimum value for normalization
         for(let i = 0; i < bids.length; i++) {
             let user = await User.findOne({ _id: bids[i].key })
-            bids[i]['user'] = user;
+            bids[i]['data']['user'] = user;
             if (bids[i].data.estimatedCost < minCost) {
                 minCost = bids[i].data.estimatedCost;
+            }
+            if (bids[i].data.estimatedCost > maxCost) {
+                maxCost = bids[i].data.estimatedCost;
             }
             if (bids[i].data.estimatedDays < minDays) {
                 minDays = bids[i].data.estimatedDays;
             }
+            if (bids[i].data.estimatedDays > maxDays) {
+                maxDays = bids[i].data.estimatedDays;
+            }
             if (bids[i].data.experience > maxExperience) {
                 maxExperience = bids[i].data.experience;
+            }
+            if (bids[i].data.experience < minExperience) {
+                minExperience = bids[i].data.experience;
             }
             if (user.rating > maxRating) {
                 maxRating = user.rating;
             }
+            if (user.rating < minRating) {
+                minRating = user.rating;
+            }
         };
-        console.log(minCost, minDays, maxExperience, maxRating);
+        console.log(minCost, maxCost, minDays, maxDays, minExperience, maxExperience, minRating, maxRating);
         //loop to normalize the values and calculate scores;
         let maxScore = 0;
         bids.forEach(bid => {
-            bid.data.estimatedCost = (bid.data.estimatedCost / minCost) * costWeight;
-            bid.data.estimatedDays = (bid.data.estimatedDays / minDays) * daysWeight;
-            if(maxExperience === 0) {
-                bid.data.experience = 0;
+            let estimatedCost, estimatedDays, experience, rating;
+            estimatedCost = normalizePreferablyLess(bid.data.estimatedCost, minCost, maxCost) * costWeight;
+            estimatedDays = normalizePreferablyLess(bid.data.estimatedDays, minDays, maxDays) * daysWeight;
+            if(maxExperience ===  minExperience) {
+                experience = 0;
             }
             else {
-                bid.data.experience = (bid.data.experience / maxExperience) * experienceWeight;
+                experience = normalizePreferablyMore(bid.data.experience, minExperience, maxExperience) * experienceWeight;
             }
-            if(maxRating === 0) {
-                bid.data['rating'] = 0;
+            if(maxRating === minRating) {
+                rating = 0;
             }
             else {
-                bid.data['rating'] = (bid.user.rating / maxRating) * ratingWeight;
+                rating = normalizePreferablyMore(bid.data.user.rating, minRating, maxRating) * ratingWeight;
             }
-            let score = bid.data.estimatedCost + bid.data.estimatedDays + bid.data.experience + bid.data.rating;
+            let score = estimatedCost + estimatedDays + experience + rating;
+            bid.data['score'] = score;
             if(score > maxScore) {
                 scoreBoard = [];
                 scoreBoard.push(
-                    {
-                        user: bid.user,
-                        score: bid.data.estimatedCost + bid.data.estimatedDays + bid.data.experience + bid.data.rating
-                    }
+                    bid.data
                 )
                 maxScore = score;
             }
             else if(maxScore === score) {
                 scoreBoard.push(
-                    {
-                        user: bid.user,
-                        score: bid.data.estimatedCost + bid.data.estimatedDays + bid.data.experience + bid.data.rating
-                    }
+                    bid.data
                 )
             }
             else {
@@ -154,25 +212,29 @@ const EvaluateTenderBids = async (tender) => {
                 { status: 'active', tenderer: scoreBoard[0].user._id },
                 { new: true }
             );
-            const obj = {
-                "winner": scoreBoard[0],
-            }
             const address = await multichain.listAddresses();
             await multichain.publishFrom({
                 from: address[0].address,
                 stream: tender.txId,
                 key: 'winner',
-                data: Buffer.from(JSON.stringify(obj), "utf8").toString("hex")
+                data: Buffer.from(JSON.stringify(scoreBoard[0]), "utf8").toString("hex")
             })
         }
         else if (scoreBoard.length > 1) {
-            let tenderers = scoreBoard.map((element) => {
-                return element.user._id;
-            })
-            Candidates.create({
-                tenderer: tenderers,
-                tender: tender._id
-            });
+            for(let i = 0; i < scoreBoard.length; i++) {
+                Candidates.create({
+                    tenderer: scoreBoard[i].user._id,
+                    bid: {
+                        estimatedCost: scoreBoard[i].estimatedCost,
+                        estimatedDays: scoreBoard[i].estimatedDays,
+                        experience: scoreBoard[i].experience,
+                        contracAgreement: scoreBoard[i].contractAgreement,
+                        comments: scoreBoard[i].comments
+                    },
+                    score: scoreBoard[i].score,
+                    tender: tender._id
+                });
+            }
         }
         else {
             return;
@@ -188,3 +250,6 @@ exports.GetTenderBids = GetTenderBids;
 exports.SubscribeTender = SubscribeTender;
 exports.EvaluateTenderBids = EvaluateTenderBids;
 exports.GetBidByKey = GetBidByKey;
+exports.GetTenderCandidates = GetTenderCandidates;
+exports.SelectWinnerFromCandidates = SelectWinnerFromCandidates;
+exports.TestSmartContract = TestSmartContract;
