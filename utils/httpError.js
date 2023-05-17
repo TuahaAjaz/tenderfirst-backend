@@ -15,6 +15,10 @@ class HttpError extends Error {
     return new HttpError(message, 'not-found', 404);
   }
 
+  static invalidStatus(message) {
+    return new HttpError(message, 'invalid-status', 403);
+  }
+
   static invalidCredentials() {
     return new HttpError(
       'Invalid username or password',

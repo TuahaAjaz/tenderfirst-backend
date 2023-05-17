@@ -5,6 +5,7 @@ const multichain = require("../multichainconfig");
 const Tender = require("../models/Tender");
 const Pool = require('../models/Pool');
 const { generateCode } = require("../utils/GenerateCode");
+const HttpError = require("../utils/httpError");
 
 const CreateTender = asyncHandler(async (req, res, next) => {
     const code = await generateCode(Tender, 'T-')
@@ -123,9 +124,25 @@ const DeleteTender = asyncHandler(async (req, res, next) => {
     res.status(200).json({success: true});
 })
 
+const MarkCompleted = asyncHandler(async (req, res, next) => {
+    const tender = req.document;
+    if(req.body.status === 'completed' && tender.status === 'active') {
+        const result = await Tender.findOneAndUpdate(
+            { _id: tender._id },
+            { status: req.body.status },
+            { new: true }
+        );
+        res.status(200).json({success: true, result: result});
+    }
+    else {
+        return next(HttpError.invalidStatus("Status of active tenders can only be changed to completed"));
+    }
+})
+
 exports.CreateTender = CreateTender;
 exports.DeleteTender = DeleteTender;
 exports.GetTenders = GetTenders;
 exports.GetApprovedTenders = GetApprovedTenders;
 exports.ApproveTender = ApproveTender;
 exports.GetAllTenders = GetAllTenders;
+exports.MarkCompleted = MarkCompleted;

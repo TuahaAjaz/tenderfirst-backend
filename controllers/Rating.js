@@ -7,14 +7,20 @@ const CreateRating = asyncHandler(async (req, res, next) => {
         user: req.body.userId,
         rating: req.body.rating
     })
-    const ratings = await Rating.find({ user: req.body.user });
-    let sum = 0;
-    ratings.map((rating) => {
-        sum += rating.rating;
-    })
+    const ratings = await Rating.find({ user: req.body.userId });
+    let avg = 0;
+    if(ratings.length > 0) {      
+        ratings.map((rating) => {
+            avg += rating.rating;
+        });
+        avg = avg / ratings.length;
+    }
+    else {
+        avg = result.rating;
+    }
     await User.findOneAndUpdate(
         { _id: req.body.userId },
-        { rating: sum / ratings.length },
+        { rating: avg },
         { new: true }
     )
     res.status(200).json({success: true, result: result});

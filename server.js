@@ -5,7 +5,6 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const mongoose = require('mongoose');
 const UserRouter = require('./routes/user');
-const RoleRouter = require('./routes/roles');
 const CategoryRouter = require('./routes/categories');
 const TenderRouter = require('./routes/tenders');
 const PoolRouter = require('./routes/pool');
@@ -29,7 +28,7 @@ const getFunction = async() => {
   }
 }
 
-const task = cron.schedule('*/10 * * * * *', getFunction);
+const task = cron.schedule('0 0 1 * * *', getFunction); //at 1 am every day
 
 task.start();
 
@@ -70,7 +69,6 @@ app.use(
 app.use('/user', UserRouter);
 app.use('/category', CategoryRouter);
 app.use('/tender', TenderRouter);
-app.use('/role', RoleRouter);
 app.use('/pool', PoolRouter);
 app.use('/rating', RatingRouter);
 

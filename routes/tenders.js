@@ -6,13 +6,14 @@ const {
   GetTenders,
   GetApprovedTenders,
   ApproveTender,
-  GetAllTenders
+  GetAllTenders,
+  MarkCompleted
 } = require('../controllers/Tender');
 
 const { protect } = require("../middlewares/protect");
 const { checkNecessaryParameters } = require('../middlewares/checkParams');
 const { pagination, aggregatedPagination } = require('../middlewares/pagination');
-const { setDocument, CheckBiddingTime } = require("../middlewares/helpers");
+const { setDocument, CheckBiddingTime, CheckStatus } = require("../middlewares/helpers");
 const Tender = require("../models/Tender");
 const { PublishBid, GetTenderBids, SubscribeTender, GetBidByKey, GetTenderCandidates, SelectWinnerFromCandidates, TestSmartContract } = require("../controllers/Bid");
 
@@ -78,6 +79,7 @@ router.post(
     ]),
     setDocument('tenderId', Tender),
     CheckBiddingTime,
+    CheckStatus,
     PublishBid
 );
 
@@ -136,6 +138,17 @@ router.get(
     protect,
     GetApprovedTenders,
     pagination
+);
+
+router.post(
+    "/completed", 
+    protect,
+    checkNecessaryParameters([
+        'tenderId',
+        'status'
+    ]),
+    setDocument('tenderId', Tender),
+    MarkCompleted
 );
 
 module.exports = router;

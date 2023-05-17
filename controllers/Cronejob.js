@@ -5,7 +5,6 @@ const CheckTendersEvaluationTime = async () => {
     const tenders = await Tender.find({status: 'approved'});
     tenders.map(async (tender) => {
         if(tender.endDate < new Date()) {
-            // console.log(tender);
             await EvaluateTenderBids(tender);
         }
         else {
