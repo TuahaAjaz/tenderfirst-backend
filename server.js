@@ -36,7 +36,7 @@ app.use(express.json());
 app.use(cors({
   credentials: true,
   methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
-  origin: "http://localhost:3000"
+  origin: ["http://localhost:3000", "http://localhost:3001"]
 }));
 app.use(
   session({
@@ -65,7 +65,6 @@ app.use(
     parseNumber: true,
   })
 );
-
 app.use('/user', UserRouter);
 app.use('/category', CategoryRouter);
 app.use('/tender', TenderRouter);

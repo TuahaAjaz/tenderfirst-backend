@@ -147,7 +147,7 @@ const EvaluateTenderBids = async (tender) => {
         let maxCost = 0, maxDays = 0, maxExperience = 0, maxRating = 0;
         // Loop to choose maximum and minimum value for normalization
         for(let i = 0; i < bids.length; i++) {
-            let user = await User.findOne({ _id: bids[i].key })
+            let user = await User.findOne({ _id: bids[i].keys[0] })
             bids[i]['data']['user'] = user;
             if (bids[i].data.estimatedCost < minCost) {
                 minCost = bids[i].data.estimatedCost;

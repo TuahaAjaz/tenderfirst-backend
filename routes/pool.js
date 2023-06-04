@@ -31,7 +31,6 @@ router.post(
 
 router.get(
     "/", 
-    protect,
     GetPools,
     pagination
 );

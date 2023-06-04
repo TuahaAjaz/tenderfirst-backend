@@ -12,7 +12,6 @@ const { pagination } = require('../middlewares/pagination');
 
 router.post(
     "/add",
-    protect,
     checkNecessaryParameters([
         "title", 
     ]), 
@@ -30,7 +29,6 @@ router.post(
 
 router.get(
     "/", 
-    protect,
     GetCategories,
     pagination
 );
